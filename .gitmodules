@@ -1,0 +1,4 @@
+[submodule "ADPluginCalib"]
+	path = ADPluginCalib
+	url = https://github.com/waynelewis/ADPluginCalib
+	ignore = all

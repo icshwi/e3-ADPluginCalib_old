@@ -25,7 +25,7 @@
 # 
 
 
-#where_am_I := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+where_am_I := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 include $(E3_REQUIRE_TOOLS)/driver.makefile
 
@@ -33,17 +33,22 @@ include $(E3_REQUIRE_TOOLS)/driver.makefile
 # one should look at other modules makefile to add more
 # In most case, one should ignore the following lines:
 
-#ifneq ($(strip $(ASYN_DEP_VERSION)),)
-#asyn_VERSION=$(ASYN_DEP_VERSION)
-#endif
+ifneq ($(strip $(ASYN_DEP_VERSION)),)
+asyn_VERSION=$(ASYN_DEP_VERSION)
+endif
+
+ifneq ($(strip $(ADCORE_DEP_VERSION)),)
+ADCore_VERSION=$(ADCORE_DEP_VERSION)
+endif
+
 
 ## Exclude linux-ppc64e6500
-##EXCLUDE_ARCHS = linux-ppc64e6500
+EXCLUDE_ARCHS = linux-ppc64e6500
 
 
-# APP:=calcApp
-# APPDB:=$(APP)/Db
-# APPSRC:=$(APP)/src
+APP:=calibApp
+APPDB:=$(APP)/Db
+APPSRC:=$(APP)/calibSrc
 
 
 # USR_INCLUDES += -I$(where_am_I)$(APPSRC)
@@ -68,12 +73,15 @@ include $(E3_REQUIRE_TOOLS)/driver.makefile
 # DBDINC_DEPS = $(subst .c,$(DEP), $(DBDINC_SRCS:$(APPSRC)/%=%))
 
 
-# HEADERS += $(APPSRC)/sCalcPostfix.h
-# HEADERS += $(APPSRC)/aCalcPostfix.h
-# HEADERS += $(DBDINC_HDRS)
+HEADERS += $(APPSRC)/NDPluginCalib.h
 
+SOURCES += $(APPSRC)/NDPluginCalib.cpp
 
-# SOURCES += $(APPSRC)/sCalcPostfix.c
+DBDS    += $(APPSRC)/NDPluginCalib.dbd
+
+TEMPLATES += $(wildcard $(APPDB)/*.db)
+TEMPLATES += $(wildcard $(APPDB)/*.template)
+
 # SOURCES += $(APPSRC)/sCalcPerform.c
 # SOURCES += $(APPSRC)/aCalcPostfix.c
 # SOURCES += $(APPSRC)/aCalcPerform.c
@@ -141,41 +149,43 @@ include $(E3_REQUIRE_TOOLS)/driver.makefile
 
 
 
+#USR_INCLUDES += -I/usr/include/libxml2
+LIB_SYS_LIBS += opencv
+
+
 
 ## This RULE should be used in case of inflating DB files 
 ## db rule is the default in RULES_DB, so add the empty one
 ## Please look at e3-mrfioc2 for example.
 
-db: 
+EPICS_BASE_HOST_BIN = $(EPICS_BASE)/bin/$(EPICS_HOST_ARCH)
+MSI = $(EPICS_BASE_HOST_BIN)/msi
 
-.PHONY: db 
+USR_DBFLAGS += -I . -I ..
+USR_DBFLAGS += -I $(EPICS_BASE)/db
+USR_DBFLAGS += -I $(APPDB)
 
-# EPICS_BASE_HOST_BIN = $(EPICS_BASE)/bin/$(EPICS_HOST_ARCH)
-# MSI = $(EPICS_BASE_HOST_BIN)/msi
-#
-# USR_DBFLAGS += -I . -I ..
-# USR_DBFLAGS += -I $(EPICS_BASE)/db
-# USR_DBFLAGS += -I $(APPDB)
-#
-# SUBS=$(wildcard $(APPDB)/*.substitutions)
-# TMPS=$(wildcard $(APPDB)/*.template)
-#
-# db: $(SUBS) $(TMPS)
+USR_DBFLAGS += -I $(E3_SITELIBS_PATH)/ADCore_$(ADCORE_DEP_VERSION)_db
 
-# $(SUBS):
-#	@printf "Inflating database ... %44s >>> %40s \n" "$@" "$(basename $(@)).db"
-#	@rm -f  $(basename $(@)).db.d  $(basename $(@)).db
-#	@$(MSI) -D $(USR_DBFLAGS) -o $(basename $(@)).db -S $@  > $(basename $(@)).db.d
-#	@$(MSI)    $(USR_DBFLAGS) -o $(basename $(@)).db -S $@
+SUBS=$(wildcard $(APPDB)/*.substitutions)
+TMPS=$(wildcard $(APPDB)/*.template)
 
-# $(TMPS):
-#	@printf "Inflating database ... %44s >>> %40s \n" "$@" "$(basename $(@)).db"
-#	@rm -f  $(basename $(@)).db.d  $(basename $(@)).db
-#	@$(MSI) -D $(USR_DBFLAGS) -o $(basename $(@)).db $@  > $(basename $(@)).db.d
-#	@$(MSI)    $(USR_DBFLAGS) -o $(basename $(@)).db $@
+db: $(SUBS) $(TMPS)
 
-#
-# .PHONY: db $(SUBS) $(TMPS)
+$(SUBS):
+	@printf "Inflating database ... %44s >>> %40s \n" "$@" "$(basename $(@)).db"
+	@rm -f  $(basename $(@)).db.d  $(basename $(@)).db
+	@$(MSI) -D $(USR_DBFLAGS) -o $(basename $(@)).db -S $@  > $(basename $(@)).db.d
+	@$(MSI)    $(USR_DBFLAGS) -o $(basename $(@)).db -S $@
+
+$(TMPS):
+	@printf "Inflating database ... %44s >>> %40s \n" "$@" "$(basename $(@)).db"
+	@rm -f  $(basename $(@)).db.d  $(basename $(@)).db
+	@$(MSI) -D $(USR_DBFLAGS) -o $(basename $(@)).db $@  > $(basename $(@)).db.d
+	@$(MSI)    $(USR_DBFLAGS) -o $(basename $(@)).db $@
+
+
+.PHONY: db $(SUBS) $(TMPS)
 
 vlibs:
 

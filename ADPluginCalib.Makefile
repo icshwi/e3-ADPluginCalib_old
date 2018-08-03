@@ -120,15 +120,16 @@ TEMPLATES += $(wildcard $(APPDB)/*.template)
 # USR_CFLAGS   += -DDEBUG_PRINT
 # USR_CPPFLAGS += -DDEBUG_PRINT
 # USR_CPPFLAGS += -DUSE_TYPED_RSET
-# USR_INCLUDES += -I/usr/include/libusb-1.0
-# USR_LDFLAGS += -lusb-1.0
+USR_INCLUDES += -I/usr/local/include/opencv
+USR_LDFLAGS += -L/usr/local/lib
 # USR_LDFLAGS += -L /opt/etherlab/lib
 # USR_LDFLAGS += -lethercat
 # USR_LDFLAGS += -Wl,-rpath=/opt/etherlab/lib
 
 ## SYSTEM LIBS 
 ##
-# USR_LIBS += boost_regex
+USR_LIBS += opencv_core
+USR_LIBS += opencv_imgproc
 # USR_LIBS += readline
 # USR_LIBS += xml2
 
@@ -150,7 +151,7 @@ TEMPLATES += $(wildcard $(APPDB)/*.template)
 
 
 #USR_INCLUDES += -I/usr/include/libxml2
-LIB_SYS_LIBS += opencv
+#LIB_SYS_LIBS += opencv
 
 
 

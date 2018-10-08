@@ -51,6 +51,7 @@ APPDB:=$(APP)/Db
 APPSRC:=$(APP)/calibSrc
 
 USR_INCLUDES += $(shell pkg-config --cflags opencv)
+USR_LDFLAGS += -Wl,--no-as-needed
 # Provide the linker with the list of libraries
 # required by OpenCV
 USR_LDFLAGS += $(shell pkg-config --libs opencv)
